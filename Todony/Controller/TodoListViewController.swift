@@ -10,10 +10,20 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
 
-    var itemArray  = ["IOS development", "FYP Project", "Client Project"]
+    var itemArray  = [Item]()
+    
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        let item1 =  Item()
+        item1.title  = "Ios Project"
+        itemArray.append(item1)
+        
+        if let item = defaults.array(forKey: "TodoListItemArray") as? [Item] {
+            itemArray = item
+        }
         
     }
 
@@ -24,13 +34,19 @@ class TodoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row]
+        let item  = itemArray[indexPath.row]
         
+        cell.accessoryType  = item.done ? .checkmark : .none
+        cell.textLabel?.text = item.title
         return cell
     }
     
     //MARK - Table view delegate method.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+      
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        tableView.reloadData()
         
         if tableView.cellForRow(at: indexPath)?.accessoryType  == .checkmark {
             tableView.cellForRow(at: indexPath)?.accessoryType = .none
@@ -51,7 +67,13 @@ class TodoListViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen when user click the add item on our UIAlert
-            self.itemArray.append(textField.text!)
+           
+            let newItem = Item()
+            
+             newItem.title = textField.text!
+            
+            self.itemArray.append(newItem)
+            self.defaults.set(self.itemArray, forKey: "TodoListItemArray")
             self.tableView.reloadData()
         }
         
